@@ -1,18 +1,17 @@
-"""
-This script was adapted from the original version by hieuhoang1972 which is part of MOSES. 
-"""
-
-# $Id: bleu.py 1307 2007-03-14 22:22:36Z hieuhoang1972 $
-
 """Provides:
 
-cook_refs(refs, n=4): Transform a list of reference sentences as strings into a form usable by cook_test().
-cook_test(test, refs, n=4): Transform a test sentence as a string (together with the cooked reference sentences) into a form usable by score_cooked().
+cook_refs(refs, n=4): Transform a list of reference sentences as \
+    strings into a form usable by cook_test().
+cook_test(test, refs, n=4): Transform a test sentence as a string \
+    (together with the cooked reference sentences) into a form usable by score_cooked().
 score_cooked(alltest, n=4): Score a list of cooked test sentences.
 
-score_set(s, testid, refids, n=4): Interface with dataset.py; calculate BLEU score of testid against refids.
+score_set(s, testid, refids, n=4): Interface with dataset.py; 
+calculate BLEU score of testid against refids.
 
-The reason for breaking the BLEU computation into three phases cook_refs(), cook_test(), and score_cooked() is to allow the caller to calculate BLEU scores for multiple test sets as efficiently as possible.
+The reason for breaking the BLEU computation into three phases \
+    cook_refs(), cook_test(), and score_cooked() is to allow the caller to calculate BLEU scores \
+        for multiple test sets as efficiently as possible.
 """
 
 import xml.sax.saxutils
@@ -52,14 +51,14 @@ def normalize(s):
     # Added to bypass NIST-style pre-processing of hyp and ref files -- wade
     if nonorm:
         return s.split()
-    if type(s) is not str:
+    if not isinstance(s, str):
         s = " ".join(s)
     # language-independent part:
     for pattern, replace in normalize1:
         s = re.sub(pattern, replace, s)
     s = xml.sax.saxutils.unescape(s, {"&quot;": '"'})
     # language-dependent part (assuming Western languages):
-    s = " %s " % s
+    s = f" {s} "
     if not preserve_case:
         s = s.lower()  # this might not be identical to the original
     for pattern, replace in normalize2:
@@ -68,6 +67,15 @@ def normalize(s):
 
 
 def count_ngrams(words, n=4):
+    """count ngrams of words
+
+    Args:
+        words (str): string that will divided into gram
+        n (int, optional): max ngram. Defaults to 4.
+
+    Returns:
+        _type_: _description_
+    """
     counts = {}
     for k in range(1, n + 1):
         for i in range(len(words) - k + 1):
@@ -121,7 +129,18 @@ def cook_test(test, item, n=4):
     return result
 
 
-def score_cooked(allcomps, n=4, ground=0, smooth=1):
+def score_cooked(allcomps, n=4, smooth=1):
+    """score cooked
+
+    Args:
+        allcomps (_type_): _description_
+        n (int, optional): _description_. Defaults to 4.
+        smooth (int, optional): _description_. Defaults to 1.
+
+    Returns:
+        _type_: _description_
+    """
+
     totalcomps = {"testlen": 0, "reflen": 0, "guess": [0] * n, "correct": [0] * n}
     for comps in allcomps:
         for key in ["testlen", "reflen"]:
@@ -151,24 +170,52 @@ def score_cooked(allcomps, n=4, ground=0, smooth=1):
     brevPenalty = min(
         0, 1 - float(totalcomps["reflen"] + 1) / (totalcomps["testlen"] + 1)
     )
-    for i in range(len(all_bleus)):
+    for i in enumerate(all_bleus):
         if i == 0:
             all_bleus[i] += brevPenalty
         all_bleus[i] = math.exp(all_bleus[i])
+
     return all_bleus
 
 
-def bleu(refs, candidate, ground=0, smooth=1):
+def bleu(refs, candidate, smooth=1):
+    """_summary_
+
+    Args:
+        refs (_type_): _description_
+        candidate (_type_): _description_
+        smooth (int, optional): _description_. Defaults to 1.
+
+    Returns:
+        _type_: _description_
+    """
     refs = cook_refs(refs)
     test = cook_test(candidate, refs)
-    return score_cooked([test], ground=ground, smooth=smooth)
+    return score_cooked([test], smooth=smooth)
 
 
 def splitPuncts(line):
+    """_summary_
+
+    Args:
+        line (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     return " ".join(re.findall(r"[\w]+|[^\s\w]", line))
 
 
 def computeMaps(predictions, goldfile):
+    """_summary_
+
+    Args:
+        predictions (_type_): _description_
+        goldfile (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     predictionMap = {}
     goldMap = {}
     gf = open(goldfile, "r")
@@ -195,6 +242,15 @@ def computeMaps(predictions, goldfile):
 # m1 is the reference map
 # m2 is the prediction map
 def bleuFromMaps(m1, m2):
+    """_summary_
+
+    Args:
+        m1 (_type_): _description_
+        m2 (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     score = [0] * 5
     num = 0.0
 

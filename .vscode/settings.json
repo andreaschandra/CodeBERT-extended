@@ -1,12 +1,5 @@
 {
-    "python.linting.pylintEnabled": true,
     "python.linting.pylintArgs": [
-        "--enable=F,E,W"
-    ],
-    "pylint.args": [
-        "--rcfile=.pylintrc"
-    ],
-    "pylint.path": [
-        "C:\\Users\\phoen\\anaconda3\\Scripts\\pylint"
+        "--rcfile=C:/Users/phoen/Documents/PythonNotebook/CodeBERT-extended/.pylintrc"
     ]
 }
