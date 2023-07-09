@@ -1,5 +1,9 @@
 {
     "python.linting.pylintArgs": [
         "--rcfile=C:/Users/phoen/Documents/PythonNotebook/CodeBERT-extended/.pylintrc"
-    ]
+    ],
+    "pylint.args": [
+        "--generated-members=numpy.* ,torch.*"
+    ],
+    "python.linting.pylintEnabled": true
 }

@@ -2,7 +2,6 @@
 
 import torch
 import torch.nn as nn
-import torch
 
 
 class Seq2Seq(nn.Module):
@@ -61,13 +60,19 @@ class Seq2Seq(nn.Module):
         )
 
     def forward(
-        self,
-        source_ids=None,
-        source_mask=None,
-        target_ids=None,
-        target_mask=None,
-        args=None,
+        self, source_ids=None, source_mask=None, target_ids=None, target_mask=None
     ):
+        """_summary_
+
+        Args:
+            source_ids (_type_, optional): _description_. Defaults to None.
+            source_mask (_type_, optional): _description_. Defaults to None.
+            target_ids (_type_, optional): _description_. Defaults to None.
+            target_mask (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            _type_: _description_
+        """
         outputs = self.encoder(source_ids, attention_mask=source_mask)
         encoder_output = outputs[0].permute([1, 0, 2]).contiguous()
         if target_ids is not None:
@@ -148,16 +153,21 @@ class Seq2Seq(nn.Module):
             return preds
 
 
-class Beam(object):
+class Beam:
+    """Beam search decoding"""
+
     def __init__(self, size, sos, eos):
         self.size = size
         self.tt = torch.cuda
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         # The score for each translation on the beam.
-        self.scores = self.tt.FloatTensor(size).zero_()
+        # self.scores = self.tt.FloatTensor(size).zero_()
+        self.scores = torch.FloatTensor(size).zero_().to(self.device)
         # The backpointers at each time-step.
         self.prevKs = []
         # The outputs at each time-step.
-        self.nextYs = [self.tt.LongTensor(size).fill_(0)]
+        # self.nextYs = [self.tt.LongTensor(size).fill_(0)]
+        self.nextYs = [torch.LongTensor(size).fill_(0).to(self.device)]
         self.nextYs[0][0] = sos
         # Has EOS topped the beam yet.
         self._eos = eos
@@ -167,7 +177,8 @@ class Beam(object):
 
     def getCurrentState(self):
         "Get the outputs for the current timestep."
-        batch = self.tt.LongTensor(self.nextYs[-1]).view(-1, 1)
+        # batch = self.tt.LongTensor(self.nextYs[-1]).view(-1, 1)
+        batch = torch.LongTensor(self.nextYs[-1]).view(-1, 1).to(self.device)
         return batch
 
     def getCurrentOrigin(self):
@@ -219,9 +230,19 @@ class Beam(object):
             self.eosTop = True
 
     def done(self):
+        """_summary_
+
+        Returns:
+            _type_: _description_
+        """
         return self.eosTop and len(self.finished) >= self.size
 
     def getFinal(self):
+        """_summary_
+
+        Returns:
+            _type_: _description_
+        """
         if len(self.finished) == 0:
             self.finished.append((self.scores[0], len(self.nextYs) - 1, 0))
         self.finished.sort(key=lambda a: -a[0])
@@ -249,6 +270,14 @@ class Beam(object):
         return hyps
 
     def buildTargetTokens(self, preds):
+        """_summary_
+
+        Args:
+            preds (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         sentence = []
         for pred in preds:
             tokens = []

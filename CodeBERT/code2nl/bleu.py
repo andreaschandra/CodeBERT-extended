@@ -218,7 +218,8 @@ def computeMaps(predictions, goldfile):
     """
     predictionMap = {}
     goldMap = {}
-    gf = open(goldfile, "r")
+    with open(goldfile, "r") as ctx_manager:
+        gf = ctx_manager.readlines()
 
     for row in predictions:
         cols = row.strip().split("\t")
