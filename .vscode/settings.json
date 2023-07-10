@@ -1,6 +1,6 @@
 {
-    "python.linting.pylintEnabled": true,
-    "pylint.args": [
-        "--rcfile=C:/Users/phoen/Documents/PythonNotebook/CodeBERT-extended/.pylintrc"
-    ]
+  "python.linting.pylintEnabled": true,
+  "pylint.args": [
+    "--rcfile=C:/Users/phoen/Documents/PythonNotebook/CodeBERT-extended/.pylintrc"
+  ]
 }
