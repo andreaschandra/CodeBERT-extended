@@ -46,6 +46,8 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
     datefmt="%m/%d/%Y %H:%M:%S",
     level=logging.INFO,
+    filemode="w",
+    filename="code2nl.log",
 )
 logger = logging.getLogger(__name__)
 
@@ -235,7 +237,6 @@ def main():
         type=str,
         help="The test filename. Should contain the .jsonl files for this task.",
     )
-
     parser.add_argument(
         "--config_name",
         default="",
@@ -279,7 +280,6 @@ def main():
     parser.add_argument(
         "--no_cuda", action="store_true", help="Avoid using CUDA when available"
     )
-
     parser.add_argument(
         "--train_batch_size",
         default=8,
@@ -375,6 +375,7 @@ def main():
     if os.path.exists(args.output_dir) is False:
         os.makedirs(args.output_dir)
 
+    # Setup Config, Tokenizer, and Model
     config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
     config = config_class.from_pretrained(
         args.config_name if args.config_name else args.model_name_or_path
@@ -383,13 +384,15 @@ def main():
         args.tokenizer_name if args.tokenizer_name else args.model_name_or_path,
         do_lower_case=args.do_lower_case,
     )
-
-    # build model
     encoder = model_class.from_pretrained(args.model_name_or_path, config=config)
+
+    # Setup decoder layer
     decoder_layer = nn.TransformerDecoderLayer(
         d_model=config.hidden_size, nhead=config.num_attention_heads
     )
     decoder = nn.TransformerDecoder(decoder_layer, num_layers=6)
+
+    # Build encoder-decoder mdel
     model = Seq2Seq(
         encoder=encoder,
         decoder=decoder,
@@ -400,12 +403,14 @@ def main():
         eos_id=tokenizer.sep_token_id,
     )
 
+    # Load from checkpoint if any
     if args.load_model_path:
         logger.info("reload model from %s", args.load_model_path)
         model.load_state_dict(torch.load(args.load_model_path))
 
     model.to(device)
 
+    # Setup model to DataParallel using apex or torch
     if args.local_rank != -1:
         model = DDP(model)
     elif args.n_gpu > 1:
