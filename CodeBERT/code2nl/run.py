@@ -50,7 +50,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class Example(object):
+class Example:
     """A single training/test example."""
 
     def __init__(
@@ -87,7 +87,7 @@ def read_examples(filename):
     return examples
 
 
-class InputFeatures(object):
+class InputFeatures:
     """A single training/test features for a example."""
 
     def __init__(
@@ -262,7 +262,6 @@ def main():
         help="The maximum total target sequence length after tokenization. Sequences longer "
         "than this will be truncated, sequences shorter will be padded.",
     )
-
     parser.add_argument(
         "--do_train", action="store_true", help="Whether to run training."
     )
@@ -358,6 +357,7 @@ def main():
         device = torch.device("cuda", args.local_rank)
         torch.distributed.init_process_group(backend="nccl")
         args.n_gpu = 1
+
     logger.warning(
         "Process rank: %s, device: %s, n_gpu: %s, distributed training: %s",
         args.local_rank,
@@ -365,9 +365,12 @@ def main():
         args.n_gpu,
         bool(args.local_rank != -1),
     )
+
     args.device = device
+
     # Set seed
     set_seed(args)
+
     # make dir if output_dir not exist
     if os.path.exists(args.output_dir) is False:
         os.makedirs(args.output_dir)
@@ -396,21 +399,14 @@ def main():
         sos_id=tokenizer.cls_token_id,
         eos_id=tokenizer.sep_token_id,
     )
-    if args.load_model_path is not None:
+
+    if args.load_model_path:
         logger.info("reload model from %s", args.load_model_path)
         model.load_state_dict(torch.load(args.load_model_path))
 
     model.to(device)
-    if args.local_rank != -1:
-        # Distributed training
-        # try:
-        #     from apex.parallel import DistributedDataParallel as DDP
-        # except ImportError as exc:
-        #     raise ImportError(
-        #         "Please install apex from https://www.github.com/nvidia/apex \
-        #             to use distributed and fp16 training."
-        #     ) from exc
 
+    if args.local_rank != -1:
         model = DDP(model)
     elif args.n_gpu > 1:
         # multi-gpu training

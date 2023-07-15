@@ -428,9 +428,10 @@ disable=raw-checker-failed,
         useless-suppression,
         deprecated-pragma,
         use-symbolic-message-instead,
-        W0105, W0621,
-        W1514,
-        C0103
+        W0105, W0621, W1514,
+        C0103,
+        E0401,
+        R0902, R0913, R0914, R0903, R0912, R0915
 
 
 # Enable the message, report, category or checker with the given id(s). You can
