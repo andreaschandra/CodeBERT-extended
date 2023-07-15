@@ -1,0 +1,7 @@
+torch==2.0.1  
+torchvision==0.15.2
+torchaudio==2.0.2
+tqdm==4.64
+transformers==4.30.2
+more-itertools==9.1.0
+tensorboardX==2.6.1
