@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) Microsoft Corporation. 
+# Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
 import os
 import numpy as np
-from more_itertools import chunked
 import argparse
 
 
